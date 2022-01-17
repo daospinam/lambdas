@@ -18,10 +18,27 @@ public class UserController {
   }
 
   @GetMapping("/users/{id}")
-  public List<User> getById(@PathVariable Long id) {
+  public User getById(@PathVariable Long id) {
     return DataUtils.users.stream()
         .filter(u -> Objects.equals(u.getId(), id))
+        .findFirst().orElse(getNotFound());
+  }
+
+  @GetMapping("/users/{id}/description")
+  public User getByIdWithDescription(@PathVariable Long id) {
+    var users = DataUtils.users.stream()
+        .filter(u -> Objects.equals(u.getId(), id))
         .collect(Collectors.toList());
+
+    users.forEach(
+        user -> user.setDescription("the best!!!")
+    );
+
+    return users.stream().findFirst().orElse(getNotFound());
+  }
+
+  private User getNotFound() {
+    return User.builder().Description("Not Found").build();
   }
 
 }
