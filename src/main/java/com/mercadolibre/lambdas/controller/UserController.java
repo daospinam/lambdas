@@ -1,7 +1,9 @@
 package com.mercadolibre.lambdas.controller;
 
+import com.mercadolibre.lambdas.enums.Seniority;
 import com.mercadolibre.lambdas.models.User;
 import com.mercadolibre.lambdas.utils.DataUtils;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -14,7 +16,22 @@ public class UserController {
 
   @GetMapping("/users")
   public List<User> get() {
-    return DataUtils.users;
+    var users = DataUtils.users.stream()
+        .sorted(Comparator.comparing(User::getName))
+        .collect(Collectors.toList());
+
+    // Vanilla
+    for (User user : users) {
+      System.out.println(user);
+    }
+
+    //Lambda
+    users.forEach(u -> System.out.println(u));
+
+    //Method Reference
+    users.forEach(System.out::println);
+
+    return users;
   }
 
   @GetMapping("/users/{id}")
@@ -34,7 +51,28 @@ public class UserController {
         user -> user.setDescription("the best!!!")
     );
 
+    users.stream().findFirst().ifPresentOrElse((value)
+            -> System.out.println("Value is present, its: " + value),
+        ()
+            -> System.out.println("Value is empty"));
+
     return users.stream().findFirst().orElse(getNotFound());
+  }
+
+  @GetMapping("/users/experts")
+  public List<User> getByIdSeniority() {
+    var users = DataUtils.users.stream()
+        .filter(u -> Objects.equals(u.getSeniority(), Seniority.EXPERT.getValue()))
+        .collect(Collectors.toList());
+
+    users.stream().filter(u -> Objects.equals(u.getSeniority(), Seniority.EXPERT.getValue()))
+        .forEach(user -> user.setDescription("the best expert!!!"));
+
+    /*users.forEach(
+        user -> user.setDescription("the best expert!!!")
+    );*/
+
+    return users.stream().limit(2).collect(Collectors.toList());
   }
 
   private User getNotFound() {
